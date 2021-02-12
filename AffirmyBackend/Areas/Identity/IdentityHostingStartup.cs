@@ -16,14 +16,6 @@ namespace AffirmyBackend.Areas.Identity
 {
     public class IdentityHostingStartup : IHostingStartup
     {
-        
-        public IConfiguration Configuration { get; }
-
-        public IdentityHostingStartup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
         public void Configure(IWebHostBuilder builder)
         {
             builder.ConfigureServices((context, services) => {
@@ -34,25 +26,6 @@ namespace AffirmyBackend.Areas.Identity
                 services.AddDefaultIdentity<AffirmyBackendUser>(options => options.SignIn.RequireConfirmedAccount = true)
                     .AddEntityFrameworkStores<AffirmyBackendContext>()
                     .AddDefaultTokenProviders();
-
-                services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options =>
-                {
-                    options.SaveToken = true;
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidAudience = Configuration["JWT:ValidAudience"],
-                        ValidIssuer = Configuration["JWT:ValidIssuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
-                    };
-                });
 
             });
         }
