@@ -78,6 +78,7 @@ namespace AffirmyBackend.Controllers
             {
                 UserName = registerModel.Email,
                 Email = registerModel.Email,
+                UserDatabaseName = Guid.NewGuid().ToString()
             };
 
             var result = await _userManager.CreateAsync(newUser, registerModel.Password);
@@ -86,12 +87,10 @@ namespace AffirmyBackend.Controllers
                 return Problem();
             }
 
-            var userDbName = Guid.NewGuid();
-
-            var affirmationDbResult = await _couchDbService.CreateDatabases(userDbName + "-affirmations" );
+            var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
             if (affirmationDbResult.IsSuccessStatusCode)
             {
-                var scheduleDbResult = await _couchDbService.CreateDatabases(userDbName + "-schedules");
+                var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
                 if (!scheduleDbResult.IsSuccessStatusCode)
                 {
                     return StatusCode(500);

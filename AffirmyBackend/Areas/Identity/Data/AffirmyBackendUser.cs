@@ -9,5 +9,6 @@ namespace AffirmyBackend.Areas.Identity.Data
     // Add profile data for application users by adding properties to the AffirmyBackendUser class
     public class AffirmyBackendUser : IdentityUser
     {
+        public string UserDatabaseName { get; set; }
     }
 }

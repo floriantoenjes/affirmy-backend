@@ -3,14 +3,16 @@ using System;
 using AffirmyBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AffirmyBackend.Migrations
 {
     [DbContext(typeof(AffirmyBackendContext))]
-    partial class AffirmyBackendContextModelSnapshot : ModelSnapshot
+    [Migration("20210212170057_AddUserDatabaseName")]
+    partial class AddUserDatabaseName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
