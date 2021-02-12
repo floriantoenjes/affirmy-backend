@@ -338,3 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+#environment
+AffirmyBackend/appsettings.json
+AffirmyBackend/appsettings.Development.json
