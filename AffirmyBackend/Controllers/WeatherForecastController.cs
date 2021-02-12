@@ -41,7 +41,7 @@ namespace AffirmyBackend.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
