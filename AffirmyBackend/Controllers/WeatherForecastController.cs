@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -111,12 +112,19 @@ namespace AffirmyBackend.Controllers
             var user = await _userManager.FindByEmailAsync(loginModel.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, loginModel.Password))
             {
+                // TODO: Add more security here?
+                var authClaims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, user.UserDatabaseName)
+                };
+
                 var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
                 var token = new JwtSecurityToken(
                     _configuration["JWT:ValidIssuer"],
                     _configuration["JWT:ValidAudience"],
                     expires: DateTime.Now.AddHours(3),
+                    claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                 );
                 return Ok(new
