@@ -4,8 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using AffirmyBackend.Areas.Identity.Data;
+using AffirmyBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,17 +30,19 @@ namespace AffirmyBackend.Controllers
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly UserManager<AffirmyBackendUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly CouchDbService _couchDbService;
 
         public WeatherForecastController(
             ILogger<WeatherForecastController> logger,
             UserManager<AffirmyBackendUser> userManager,
-            IConfiguration configuration
+            IConfiguration configuration,
+            CouchDbService couchDbService
         )
         {
             _logger = logger;
             _userManager = userManager;
             _configuration = configuration;
-            
+            _couchDbService = couchDbService;
         }
 
         [HttpGet]
@@ -81,6 +86,22 @@ namespace AffirmyBackend.Controllers
                 return Problem();
             }
 
+            var userDbName = Guid.NewGuid();
+
+            var affirmationDbResult = await _couchDbService.CreateDatabases(userDbName + "-affirmations" );
+            if (affirmationDbResult.IsSuccessStatusCode)
+            {
+                var scheduleDbResult = await _couchDbService.CreateDatabases(userDbName + "-schedules");
+                if (!scheduleDbResult.IsSuccessStatusCode)
+                {
+                    return StatusCode(500);
+                }
+            }
+            else
+            {
+                return StatusCode(500);
+            }
+
             return Ok();
         }
         
@@ -113,6 +134,7 @@ namespace AffirmyBackend.Controllers
     public class RegisterModel
     {
         [Required]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
