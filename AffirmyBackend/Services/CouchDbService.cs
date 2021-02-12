@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace AffirmyBackend.Services
 {
@@ -28,9 +30,27 @@ namespace AffirmyBackend.Services
             var dbUserByteArray = Encoding.ASCII.GetBytes(_configuration["CouchDB:User"]);
             httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(dbUserByteArray));
             
-            var httpContent = new StringContent("affirmycsharp", Encoding.UTF8, "application/json");
+            // var httpContent = new StringContent("affirmycsharp", Encoding.UTF8, "application/json");
+            var httpContent = new StringContent(dbName, Encoding.UTF8, "application/json");
 
-            return await httpClient.PutAsync(dbName, httpContent);
+            var dbCreationResult = await httpClient.PutAsync(dbName, httpContent);
+            if (!dbCreationResult.IsSuccessStatusCode)
+            {
+                return new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
+
+            var newDbUser = JObject.FromObject(new
+            {
+                name = "florian",
+                password = "P@ssw0rd",
+                roles = Array.Empty<string>(),
+                type = "user"
+            });
+
+            return await httpClient.PutAsync("/_users/org.couchdb.user:" + "florian", new StringContent(newDbUser.ToString(), Encoding.UTF8, "application/json"));
         }
     }
 }
