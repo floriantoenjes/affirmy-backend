@@ -55,12 +55,12 @@ namespace AffirmyBackend.Services
 
             var securityObject = JObject.FromObject(new
             {
-                admins = Array.Empty<string>(),
+                admins = JObject.FromObject(new {}),
                 members = JObject.FromObject(new
                 {
                     names = new List<string>()
                     {
-                        affirmyBackendUser.UserDatabaseName
+                        affirmyBackendUser.Email
                     },
                     roles = Array.Empty<string>()
                 }),

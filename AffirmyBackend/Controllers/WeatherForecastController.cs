@@ -93,26 +93,31 @@ namespace AffirmyBackend.Controllers
             {
                 return Problem("Failed creating db user");
             }
-            var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
+
+            var affirmationDbName = "affirmations-" + newUser.UserDatabaseName;
+            
+            var affirmationDbResult = await _couchDbService.CreateDatabases(affirmationDbName);
             if (!affirmationDbResult.IsSuccessStatusCode)
             {
                 return Problem("Failed creating affirmations db");
             }
 
             var affirmationDbAssignResult =
-                await _couchDbService.AssignDatabaseUser(newUser, newUser.UserDatabaseName + "-affirmations");
+                await _couchDbService.AssignDatabaseUser(newUser, affirmationDbName);
             if (!affirmationDbAssignResult.IsSuccessStatusCode)
             {
                 return Problem("Failed assigning affirmations db user");
             }
-            
-            var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
+
+            var scheduleDbName = "schedules-" + newUser.UserDatabaseName;
+
+            var scheduleDbResult = await _couchDbService.CreateDatabases( scheduleDbName);
             if (!scheduleDbResult.IsSuccessStatusCode)
             {
                 return Problem("Failed creating schedules db");
             }
             var scheduleDbAssignResult =
-                await _couchDbService.AssignDatabaseUser(newUser, newUser.UserDatabaseName + "-affirmations");
+                await _couchDbService.AssignDatabaseUser(newUser, scheduleDbName);
             if (!scheduleDbAssignResult.IsSuccessStatusCode)
             {
                 return Problem("Failed assigning schedules db user");
