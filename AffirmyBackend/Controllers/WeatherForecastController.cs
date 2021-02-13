@@ -89,27 +89,35 @@ namespace AffirmyBackend.Controllers
             }
 
             var dbUserCreated = await _couchDbService.CreateDatabaseUser(newUser);
+            if (!dbUserCreated.IsSuccessStatusCode)
+            {
+                return Problem("Failed creating db user");
+            }
+            var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
+            if (!affirmationDbResult.IsSuccessStatusCode)
+            {
+                return Problem("Failed creating affirmations db");
+            }
 
-            if (dbUserCreated.IsSuccessStatusCode)
+            var affirmationDbAssignResult =
+                await _couchDbService.AssignDatabaseUser(newUser, newUser.UserDatabaseName + "-affirmations");
+            if (!affirmationDbAssignResult.IsSuccessStatusCode)
             {
-                var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
-                if (affirmationDbResult.IsSuccessStatusCode)
-                {
-                    var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
-                    if (!scheduleDbResult.IsSuccessStatusCode)
-                    {
-                        return StatusCode(500);
-                    }
-                }
-                else
-                {
-                    return StatusCode(500);
-                }                
+                return Problem("Failed assigning affirmations db user");
             }
-            else
+            
+            var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
+            if (!scheduleDbResult.IsSuccessStatusCode)
             {
-                return StatusCode(500);
+                return Problem("Failed creating schedules db");
             }
+            var scheduleDbAssignResult =
+                await _couchDbService.AssignDatabaseUser(newUser, newUser.UserDatabaseName + "-affirmations");
+            if (!scheduleDbAssignResult.IsSuccessStatusCode)
+            {
+                return Problem("Failed assigning schedules db user");
+            }
+
 
             return Ok();
         }

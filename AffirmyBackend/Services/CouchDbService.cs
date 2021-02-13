@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -44,8 +45,28 @@ namespace AffirmyBackend.Services
                 type = "user"
             });
 
-            return await httpClient.PutAsync("/_users/org.couchdb.user:" + "florian", 
+            return await httpClient.PutAsync("/_users/org.couchdb.user:" + affirmyBackendUser.Email, 
                 new StringContent(newDbUser.ToString(), Encoding.UTF8, "application/json"));
+        }
+
+        public async Task<HttpResponseMessage> AssignDatabaseUser(AffirmyBackendUser affirmyBackendUser, string dbName)
+        {
+            var httpClient = HttpClient();
+
+            var securityObject = JObject.FromObject(new
+            {
+                admins = Array.Empty<string>(),
+                members = JObject.FromObject(new
+                {
+                    names = new List<string>()
+                    {
+                        affirmyBackendUser.UserDatabaseName
+                    },
+                    roles = Array.Empty<string>()
+                }),
+            });
+
+            return await httpClient.PutAsync(dbName + "/_security", new StringContent(securityObject.ToString(), Encoding.UTF8, "application/json"));
         }
 
         private HttpClient HttpClient()
