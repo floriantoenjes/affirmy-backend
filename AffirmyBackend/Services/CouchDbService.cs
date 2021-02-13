@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using AffirmyBackend.Areas.Identity.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
@@ -22,35 +24,40 @@ namespace AffirmyBackend.Services
 
         public async Task<HttpResponseMessage> CreateDatabases(string dbName)
         {
-            var httpClient = _clientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Clear();
+            var httpClient = HttpClient();
 
-            httpClient.BaseAddress = new Uri( _configuration["CouchDB:URL"]);
-            var dbUserByteArray = Encoding.ASCII.GetBytes(_configuration["CouchDB:User"]);
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(dbUserByteArray));
-            
             // var httpContent = new StringContent("affirmycsharp", Encoding.UTF8, "application/json");
             var httpContent = new StringContent(dbName, Encoding.UTF8, "application/json");
 
-            var dbCreationResult = await httpClient.PutAsync(dbName, httpContent);
-            if (!dbCreationResult.IsSuccessStatusCode)
-            {
-                return new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.InternalServerError
-                };
-            }
+            return await httpClient.PutAsync(dbName, httpContent);
+        }
 
+        public async Task<HttpResponseMessage> CreateDatabaseUser(AffirmyBackendUser affirmyBackendUser)
+        {
+            var httpClient = HttpClient();
+            
             var newDbUser = JObject.FromObject(new
             {
-                name = "florian",
-                password = "P@ssw0rd",
+                name = affirmyBackendUser.Email,
+                password = affirmyBackendUser.PasswordHash,
                 roles = Array.Empty<string>(),
                 type = "user"
             });
 
-            return await httpClient.PutAsync("/_users/org.couchdb.user:" + "florian", new StringContent(newDbUser.ToString(), Encoding.UTF8, "application/json"));
+            return await httpClient.PutAsync("/_users/org.couchdb.user:" + "florian", 
+                new StringContent(newDbUser.ToString(), Encoding.UTF8, "application/json"));
+        }
+
+        private HttpClient HttpClient()
+        {
+            var httpClient = _clientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Clear();
+
+            httpClient.BaseAddress = new Uri(_configuration["CouchDB:URL"]);
+            var dbUserByteArray = Encoding.ASCII.GetBytes(_configuration["CouchDB:User"]);
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(dbUserByteArray));
+            return httpClient;
         }
     }
 }

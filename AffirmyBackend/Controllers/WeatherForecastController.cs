@@ -88,14 +88,23 @@ namespace AffirmyBackend.Controllers
                 return Problem();
             }
 
-            var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
-            if (affirmationDbResult.IsSuccessStatusCode)
+            var dbUserCreated = await _couchDbService.CreateDatabaseUser(newUser);
+
+            if (dbUserCreated.IsSuccessStatusCode)
             {
-                var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
-                if (!scheduleDbResult.IsSuccessStatusCode)
+                var affirmationDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-affirmations" );
+                if (affirmationDbResult.IsSuccessStatusCode)
+                {
+                    var scheduleDbResult = await _couchDbService.CreateDatabases(newUser.UserDatabaseName + "-schedules");
+                    if (!scheduleDbResult.IsSuccessStatusCode)
+                    {
+                        return StatusCode(500);
+                    }
+                }
+                else
                 {
                     return StatusCode(500);
-                }
+                }                
             }
             else
             {
