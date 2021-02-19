@@ -20,7 +20,7 @@ namespace AffirmyBackend.Areas.Identity
         {
             builder.ConfigureServices((context, services) => {
                 services.AddDbContext<AffirmyBackendContext>(options =>
-                    options.UseSqlite(
+                    options.UseNpgsql(
                         context.Configuration.GetConnectionString("AffirmyBackendContextConnection")));
 
                 services.AddDefaultIdentity<AffirmyBackendUser>(options => options.SignIn.RequireConfirmedAccount = true)
