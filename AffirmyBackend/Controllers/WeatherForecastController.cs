@@ -82,12 +82,6 @@ namespace AffirmyBackend.Controllers
                 UserDatabaseName = Guid.NewGuid().ToString()
             };
 
-            var result = await _userManager.CreateAsync(newUser, registerModel.Password);
-            if (!result.Succeeded)
-            {
-                return Problem();
-            }
-
             var dbUserCreated = await _couchDbService.CreateDatabaseUser(newUser);
             if (!dbUserCreated.IsSuccessStatusCode)
             {
@@ -121,6 +115,12 @@ namespace AffirmyBackend.Controllers
             if (!scheduleDbAssignResult.IsSuccessStatusCode)
             {
                 return Problem("Failed assigning schedules db user");
+            }
+            
+            var result = await _userManager.CreateAsync(newUser, registerModel.Password);
+            if (!result.Succeeded)
+            {
+                return Problem();
             }
 
 
